@@ -2,9 +2,9 @@
 
 set -e
 
-export CON_NAME=php-fpm_t
+export CON_NAME=php-apache_t
 export REG_URL=d.nicescale.com:5000
-export IMAGE=php-fpm
+export IMAGE=php-apache
 export TAGS="5.6 5.6.10"
 export BASE_IMAGE=microimages/alpine
 
