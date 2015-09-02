@@ -1,140 +1,85 @@
-# Supported tags and respective `Dockerfile` links
 
--	[`5.4.44-cli`, `5.4-cli`, `5.4.44`, `5.4` (*5.4/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.4/Dockerfile)
--	[`5.4.44-apache`, `5.4-apache` (*5.4/apache/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.4/apache/Dockerfile)
--	[`5.4.44-fpm`, `5.4-fpm` (*5.4/fpm/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.4/fpm/Dockerfile)
--	[`5.5.28-cli`, `5.5-cli`, `5.5.28`, `5.5` (*5.5/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.5/Dockerfile)
--	[`5.5.28-apache`, `5.5-apache` (*5.5/apache/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.5/apache/Dockerfile)
--	[`5.5.28-fpm`, `5.5-fpm` (*5.5/fpm/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.5/fpm/Dockerfile)
--	[`5.6.12-cli`, `5.6-cli`, `5-cli`, `cli`, `5.6.12`, `5.6`, `5`, `latest` (*5.6/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.6/Dockerfile)
--	[`5.6.12-apache`, `5.6-apache`, `5-apache`, `apache` (*5.6/apache/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.6/apache/Dockerfile)
--	[`5.6.12-fpm`, `5.6-fpm`, `5-fpm`, `fpm` (*5.6/fpm/Dockerfile*)](https://github.com/docker-library/php/blob/789a45b03fe31ca1ac7f490bafe300e728b18bb9/5.6/fpm/Dockerfile)
--	[`7.0.0RC1-cli`, `7.0-cli`, `7-cli`, `7.0.0RC1`, `7.0`, `7` (*7.0/Dockerfile*)](https://github.com/docker-library/php/blob/f5e091ac3815dce80ca496298e0cb94638844b10/7.0/Dockerfile)
--	[`7.0.0RC1-apache`, `7.0-apache`, `7-apache` (*7.0/apache/Dockerfile*)](https://github.com/docker-library/php/blob/f5e091ac3815dce80ca496298e0cb94638844b10/7.0/apache/Dockerfile)
--	[`7.0.0RC1-fpm`, `7.0-fpm`, `7-fpm` (*7.0/fpm/Dockerfile*)](https://github.com/docker-library/php/blob/f5e091ac3815dce80ca496298e0cb94638844b10/7.0/fpm/Dockerfile)
+# 如何使用该镜像
 
-For more information about this image and its history, please see the [relevant manifest file (`library/php`)](https://github.com/docker-library/official-images/blob/master/library/php) in the [`docker-library/official-images` GitHub repo](https://github.com/docker-library/official-images).
+php-apache是在Apache httpd服务里提供PHP解析的能力。
 
-# What is PHP?
-
-PHP is a server-side scripting language designed for web development, but which can also be used as a general-purpose programming language. PHP can be added to straight HTML or it can be used with a variety of templating engines and web frameworks. PHP code is usually processed by an interpreter, which is either implemented as a native module on the web-server or as a common gateway interface (CGI).
-
-> [wikipedia.org/wiki/PHP](http://en.wikipedia.org/wiki/PHP)
-
-![logo](https://raw.githubusercontent.com/docker-library/docs/master/php/logo.png)
-
-# How to use this image.
-
-## With Command Line
-
-For PHP projects run through the command line interface (CLI), you can do the following.
-
-### Create a `Dockerfile` in your PHP project
-
-```dockerfile
-FROM php:5.6-cli
-COPY . /usr/src/myapp
-WORKDIR /usr/src/myapp
-CMD [ "php", "./your-script.php" ]
+## 在项目下放一个Dockerfile
+```console
+from index.csphere.cn/microimages/php-apache
+add . /app
 ```
 
-Then, run the commands to build and run the Docker image:
+上面的Dockerfile将项目代码下的所有php文件加到了 `/app` 目录下。
 
+## 构建运行
 ```console
 $ docker build -t my-php-app .
-$ docker run -it --rm --name my-running-app my-php-app
+$ docker run -d --name some-app my-php-app
 ```
 
-### Run a single PHP script
-
-For many simple, single file projects, you may find it inconvenient to write a complete `Dockerfile`. In such cases, you can run a PHP script by using the PHP Docker image directly:
+## 安装额外扩展
+由于base镜像使用了alpine，用的是apk包管理工具，你可以进入alpine容器，来搜索对应的php扩展包
 
 ```console
-$ docker run -it --rm --name my-running-script -v "$PWD":/usr/src/myapp -w /usr/src/myapp php:5.6-cli php your-script.php
+$ docker run -it --rm index.csphere.cn/microimages/alpine sh -c "apk search php-* | grep myextension"
 ```
 
-## With Apache
-
-More commonly, you will probably want to run PHP in conjunction with Apache httpd. Conveniently, there's a version of the PHP container that's packaged with the Apache web server.
-
-### Create a `Dockerfile` in your PHP project
-
-```dockerfile
-FROM php:5.6-apache
-COPY src/ /var/www/html/
-```
-
-Where `src/` is the directory containing all your php code. Then, run the commands to build and run the Docker image:
+找到对应的软件包php-myextension后，编写Dockerfile如下：
 
 ```console
-$ docker build -t my-php-app .
-$ docker run -it --rm --name my-running-app my-php-app
+from index.csphere.cn/microimages/php-apache
+run apk add php-myextension
 ```
 
-We recommend that you add a custom `php.ini` configuration. `COPY` it into `/usr/local/etc/php` by adding one more line to the Dockerfile above and running the same commands to build and run:
-
-```dockerfile
-FROM php:5.6-apache
-COPY config/php.ini /usr/local/etc/php/
-COPY src/ /var/www/html/
-```
-
-Where `src/` is the directory containing all your php code and `config/` contains your `php.ini` file.
-
-### How to install more PHP extensions
-
-We provide two convenient scripts named `docker-php-ext-configure` and `docker-php-ext-install`, you can use them to easily install PHP extension.
-
-For example, if you want to have a PHP-FPM image with `iconv`, `mcrypt` and `gd` extensions, you can inherit the base image that you like, and write your own `Dockerfile` like this:
-
-```dockerfile
-FROM php:5.6-fpm
-# Install modules
-RUN apt-get update && apt-get install -y \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libmcrypt-dev \
-        libpng12-dev \
-    && docker-php-ext-install iconv mcrypt \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd
-CMD ["php-fpm"]
-```
-
-Remember, you must install dependencies for your extensions manually. If an extension needs custom `configure` arguments, you can use the `docker-php-ext-configure` script like this example.
-
-### Without a `Dockerfile`
-
-If you don't want to include a `Dockerfile` in your project, it is sufficient to do the following:
+## 开发环境使用
+在开发环境为了更加高效，避免每次代码更新都进入build流程，可以：
 
 ```console
-$ docker run -it --rm --name my-apache-php-app -v "$PWD":/var/www/html php:5.6-apache
+$ image=index.csphere.cn/microimages/php-apache
+$ docker run -d --name php -p 8080:80 -v /myapp:/app --link mysql:mysql-master.example.com --link mysql:mysql-slave.example.com $image
 ```
 
-# License
+我们通过volume将 `/myapp` 映射到了容器里的 `/app` ,这样代码放到 `/myapp` 下面编写，就可以实时观看到效果了。
 
-View [license information](http://php.net/license/) for the software contained in this image.
+上面我们用了两个link，一个用于主库，一个用于从库。建议开发过程中，使用生产环境分配好的名字，这样镜像部署到生产环境时，就不需要重新修改代码打包了。
+我们在连结mysql时：
 
-# Supported Docker versions
+```console
+// connect to master
+mysql_connect("mysql-master.example.com", 3306)
 
-This image is officially supported on Docker version 1.8.1.
+// connect to slave
+mysql_connect("mysql-slave.example.com", 3306)
+```
 
-Support for older versions (down to 1.0) is provided on a best-effort basis.
+另一种方法是使用环境变量，环境变量的好处是你在不同的部署环境下，可以赋予不同的名字或值。比如：
 
-# User Feedback
+```console
+$ image=index.csphere.cn/microimages/php-apache
+$ docker run -d -p 8080:80 -v /myapp:/app -e MYSQL_MASTER_HOST=192.168.1.2 -e MYSQL_SLAVE_HOST=192.168.1.2 $image 
+```
 
-## Documentation
+如果我们使用 `docker-compose` 部署，在不同环境部署时，需要注意修改yml配置里对应环境变量的值。
 
-Documentation for this image is stored in the [`php/` directory](https://github.com/docker-library/docs/tree/master/php) of the [`docker-library/docs` GitHub repo](https://github.com/docker-library/docs). Be sure to familiarize yourself with the [repository's `README.md` file](https://github.com/docker-library/docs/blob/master/README.md) before attempting a pull request.
+使用名字和环境变量，各有优劣。
 
-## Issues
+## 生产环境使用
 
-If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/docker-library/php/issues).
+通过Dockerfile构建出应用镜像之后，在生产环境部署时，需要注意：
 
-You can also reach many of the official image maintainers via the `#docker-library` IRC channel on [Freenode](https://freenode.net).
+- 后端服务的名字，如数据库dbhost，redis主机的host等。由于我们已经在前面规范好了名字，所以部署到生产环境 就比较容易了。
+- 日志收集, php的错误日志和访问日志，可以通过 `syslog` 进行收集
 
-## Contributing
+```console
+$ docker run -d -p 80:80 --log-driver=syslog --log-opt address=udp://syslogserver:514 my-php-app
+```
 
-You are invited to contribute new features, fixes, or updates, large or small; we are always thrilled to receive pull requests, and do our best to process them as fast as we can.
+这个时候 `docker logs` 是没有日志输出的，日志都转存到 `syslog server` 了
 
-Before you start to code, we recommend discussing your plans through a [GitHub issue](https://github.com/docker-library/php/issues), especially for more ambitious contributions. This gives other contributors a chance to point you in the right direction, give you feedback on your design, and help you find out if someone else is working on the same thing.
+## 授权和法律
+
+该镜像由希云制造，未经允许，任何第三方企业和个人，不得重新分发。违者必究。
+
+## 支持和反馈
+
+该镜像由希云为企业客户提供技术支持和保障，任何问题都可以直接反馈到: `docker@csphere.cn`
