@@ -1,3 +1,4 @@
+![php-apache](https://csphere.cn/assets/8bb6b00d-b42c-4ee9-b4e2-88c0086c8cb0)
 
 # 如何使用该镜像
 
