@@ -8,10 +8,13 @@ run apk add --update php-apache2 php-curl php-sockets php-cli php-openssl php-my
 	&& rm -fr /var/cache/apk/*
 
 copy apache2-foreground /usr/bin/
-
-run ln -s /var/www/localhost/htdocs /app
+copy docker-php-ext-install /usr/bin/
 
 workdir /app
+
+run mv /var/www/localhost/htdocs/* /app/ \
+	&& rmdir /var/www/localhost/htdocs \
+	&& ln -s /app /var/www/localhost/htdocs
 
 expose 80
 

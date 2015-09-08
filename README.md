@@ -19,17 +19,18 @@ $ docker run -d --name some-app my-php-app
 ```
 
 ## 安装额外扩展
-由于base镜像使用了alpine，用的是apk包管理工具，你可以进入alpine容器，来搜索对应的php扩展包
 
 ```console
-$ docker run -it --rm index.csphere.cn/microimages/alpine sh -c "apk search php-* | grep myextension"
+$ docker run -it --rm index.csphere.cn/microimages/php-apache docker-php-ext-install
 ```
 
-找到对应的软件包php-myextension后，编写Dockerfile如下：
+php-apache容器里内置了docker-php-ext-install命令，可以通过该命令获取支持的扩展列表，以及安装对应的扩展
+
+找到对应的软件包php-extension后，编写Dockerfile如下：
 
 ```console
 from index.csphere.cn/microimages/php-apache
-run apk add php-myextension
+run docker-php-ext-install myext1 myext2
 ```
 
 ## 开发环境使用
