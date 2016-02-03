@@ -4,6 +4,7 @@ set -xe
 
 docker rm -f "$CON_NAME" > /dev/null 2>&1 || true
 docker run -d --name $CON_NAME $IMAGE
+sleep 2
 
 PROGRAM=hello
 cat <<EOF > /tmp/$PROGRAM.php
